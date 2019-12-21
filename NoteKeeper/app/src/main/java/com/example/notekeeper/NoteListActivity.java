@@ -1,5 +1,6 @@
 package com.example.notekeeper;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -28,8 +29,9 @@ public class NoteListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                       // .setAction("Action", null).show();
+                startActivity(new Intent(NoteListActivity.this,MainActivity.class));
             }
         });
 
@@ -37,17 +39,24 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void initializeDisplayContent() {
-
-        ListView listNotes=(ListView)findViewById(R.id.list_notes);
-        List<NoteInfo> notes=DataManager.getInstance().getNotes();
-        ArrayAdapter<NoteInfo> adapterNotes=new ArrayAdapter<NoteInfo>(this,android.R.layout.simple_list_item_1,notes);
+        final ListView listNotes = (ListView) findViewById(R.id.list_notes);
+        List<NoteInfo> notes = DataManager.getInstance().getNotes();
+        ArrayAdapter<NoteInfo> adapterNotes = new ArrayAdapter<NoteInfo>(this,android.R.layout.simple_list_item_1,notes);
         listNotes.setAdapter(adapterNotes);
+
         listNotes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intentNoteActivity = new Intent(NoteListActivity.this,MainActivity.class);
+                NoteInfo selectedNote = (NoteInfo) listNotes.getItemAtPosition(position);
+                //intentNoteActivity.putExtra(MainActivity.NOTE_INFO,selectedNote);
+                intentNoteActivity.putExtra(MainActivity.NOTE_POSITION,position);
+                startActivity(intentNoteActivity);
+
 
             }
         });
+
     }
 
 }
