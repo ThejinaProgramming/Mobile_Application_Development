@@ -16,6 +16,10 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String ORIGINAL_COURSE_ID = "com.example.notekeeper.ORIGINAL_COURSE_ID";
+    public static final String ORIGINAL_NOTE_TITLE = "com.example.notekeeper.ORIGINAL_NOTE_TITLE";
+    public static final String ORIGINAL_NOTE_TEXT = "com.example.notekeeper.ORIGINAL_NOTE_TEXT";
+
     public static final String NOTE_INFO = "com.example.notekeeper.NOTE_INFO";
     public static final String NOTE_POSITION = "com.example.notekeeper.NOTE_POSITION";
     private NoteInfo selectedNoteInfo;
@@ -23,6 +27,11 @@ public class MainActivity extends AppCompatActivity {
     private Spinner spinnerCourses;
     private EditText textNoteTitle;
     private EditText textNoteText;
+    private boolean isCancelling;
+    private int newNotePosition;
+    private String originalNoteCourseId;
+    private String originalNoteCourseTitle;
+    private String originalNoteCourseText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +57,44 @@ public class MainActivity extends AppCompatActivity {
 
         readDisplayStateValues();
 
+        if (savedInstanceState == null)
+        {
+            saveOriginalNoteValues();
+        }
+        else
+        {
+            restoreOriginalStateValues(savedInstanceState);
+        }
+        saveOriginalNoteValues();
+
         textNoteTitle = (EditText)findViewById(R.id.text_note_title);
         textNoteText = (EditText) findViewById(R.id.text_note_text);
 
         if(!isNewNote){
             displayNote(spinnerCourses, textNoteText, textNoteTitle);
         }
+    }
 
+    private void restoreOriginalStateValues(Bundle savedInstanceState) {
+        originalNoteCourseId = savedInstanceState.getString(ORIGINAL_COURSE_ID);
+        originalNoteCourseTitle = savedInstanceState.getString(ORIGINAL_NOTE_TITLE);
+        originalNoteCourseText = savedInstanceState.getString(ORIGINAL_NOTE_TEXT);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(ORIGINAL_COURSE_ID,originalNoteCourseId);
+        outState.putString(ORIGINAL_NOTE_TITLE,originalNoteCourseTitle);
+        outState.putString(originalNoteCourseText,originalNoteCourseText);
+    }
+
+    private void saveOriginalNoteValues() {
+        if(isNewNote)
+            return;
+        originalNoteCourseId = selectedNoteInfo.getCourse().getCourseId();
+        originalNoteCourseTitle = selectedNoteInfo.getTitle();
+        originalNoteCourseText = selectedNoteInfo.getText();
     }
 
     private void displayNote(Spinner spinnerCourses, EditText textNoteText, EditText textNoteTitle) {
@@ -77,7 +117,50 @@ public class MainActivity extends AppCompatActivity {
 
         if(!isNewNote)
             selectedNoteInfo=DataManager.getInstance().getNotes().get(selectedNotePosition);
+        else
+            createNewNote();
     }
+
+    private void createNewNote() {
+        DataManager dm = DataManager.getInstance();
+        newNotePosition = dm.createNewNote();
+        selectedNoteInfo=dm.getNotes().get(newNotePosition);
+
+    }
+
+    //if user press back button or call finish() method then onPause method will execute
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if(isCancelling){
+            if(isNewNote){
+                DataManager.getInstance().removeNote(newNotePosition);
+            }
+            else{
+                storePreviousNoteValues();
+            }
+        }
+        else{
+            saveNote();
+        }
+
+
+    }
+
+    private void storePreviousNoteValues() {
+        CourseInfo course = DataManager.getInstance().getCourse(originalNoteCourseId);
+        selectedNoteInfo.setCourse(course);
+        selectedNoteInfo.setTitle(originalNoteCourseTitle);
+        selectedNoteInfo.setText(originalNoteCourseText);
+    }
+
+    private void saveNote() {
+        selectedNoteInfo.setCourse((CourseInfo) spinnerCourses.getSelectedItem());
+        selectedNoteInfo.setTitle(textNoteTitle.getText().toString());
+        selectedNoteInfo.setText(textNoteText.getText().toString());
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -97,6 +180,10 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_send_email) {
             sendMail();
             return true;
+        }
+        else if(id==R.id.action_cancel){
+            isCancelling = true;
+            finish();//calling the onPause() method
         }
 
         return super.onOptionsItemSelected(item);
