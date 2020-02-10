@@ -11,4 +11,7 @@
         android:id="@+id/action_cancel"
         android:orderInCategory="101"
         android:title="@android:string/cancel" />
+    <item
+        android:id="@+id/action_next"
+        android:title="Next" />
 </menu>

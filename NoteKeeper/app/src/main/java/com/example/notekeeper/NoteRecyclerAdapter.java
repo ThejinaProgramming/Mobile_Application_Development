@@ -1,6 +1,7 @@
 package com.example.notekeeper;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,7 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         NoteInfo note = notes.get(position);
         viewHolder.textCourse.setText(note.getCourse().getTitle());
         viewHolder.textTitle.setText(note.getText());
+        viewHolder.currentPosition = position;
     }
 
     @Override
@@ -47,11 +49,22 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
     {
         public final TextView textCourse;
         public final TextView textTitle;
+        public int currentPosition;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             textCourse = (TextView) itemView.findViewById(R.id.text_course);
             textTitle = (TextView) itemView.findViewById(R.id.text_title);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent noteIntent = new Intent(context,MainActivity.class);
+                    noteIntent.putExtra(MainActivity.NOTE_POSITION,currentPosition);
+                    context.startActivity(noteIntent);
+                }
+            });
+
         }
     }
 }

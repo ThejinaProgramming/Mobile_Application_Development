@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private String originalNoteCourseId;
     private String originalNoteCourseTitle;
     private String originalNoteCourseText;
+    private int selectedNotePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
         //selectedNoteInfo = intent.getParcelableExtra(NOTE_INFO);
         //isNewNote=selectedNoteInfo==null;
 
-        int selectedNotePosition = intent.getIntExtra(NOTE_POSITION,-1);
-        isNewNote = selectedNotePosition==-1;
+        selectedNotePosition = intent.getIntExtra(NOTE_POSITION,-1);
+        isNewNote = selectedNotePosition ==-1;
 
         if(!isNewNote)
             selectedNoteInfo=DataManager.getInstance().getNotes().get(selectedNotePosition);
@@ -185,8 +186,20 @@ public class MainActivity extends AppCompatActivity {
             isCancelling = true;
             finish();//calling the onPause() method
         }
+        else if(id==R.id.action_next){
+            moveNext();
+        }
+
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void moveNext() {
+        saveNote();
+        ++selectedNotePosition;
+        selectedNoteInfo = DataManager.getInstance().getNotes().get(selectedNotePosition);
+        saveOriginalNoteValues();
+        displayNote(spinnerCourses,textNoteText,textNoteTitle);
     }
 
     private void sendMail() {
